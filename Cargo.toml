@@ -10,6 +10,9 @@ license = "MIT"
 image = "0.25"
 base64 = "0.22.1"
 winapi = { version = "0.3.9", features = ["shellapi"] }
+regex = "1.11.1"
+roxmltree = { git = "https://github.com/RazrFalcon/roxmltree", tag = "v0.20.0" }
+sysinfo = "0.33.1"
 
 [dependencies.windows]
 version = "0.58"
