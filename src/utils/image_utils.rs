@@ -1,13 +1,13 @@
-use std::mem::MaybeUninit;
-use std::io::Read;
-use std::fs::File;
-use std::ffi::OsStr;
-use std::error::Error;
-use std::os::windows::ffi::OsStrExt;
-use std::ptr;
 use base64::engine::general_purpose;
 use base64::Engine;
 use image::RgbaImage;
+use std::error::Error;
+use std::ffi::OsStr;
+use std::fs::File;
+use std::io::Read;
+use std::mem::MaybeUninit;
+use std::os::windows::ffi::OsStrExt;
+use std::ptr;
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Gdi::DeleteObject;
@@ -112,9 +112,6 @@ pub unsafe fn icon_to_image(icon: HICON) -> Result<RgbaImage, Box<dyn std::error
         [r, g, b, a].into()
     }))
 }
-
-
-
 
 pub fn read_image_to_base64(file_path: &str) -> Result<String, Box<dyn Error>> {
     let mut file = File::open(file_path)?;

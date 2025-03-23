@@ -1,5 +1,5 @@
-use std::{thread, time};
 use std::ptr::addr_of_mut;
+use std::{thread, time};
 use sysinfo::Pid;
 use windows::Win32::Foundation::BOOL;
 use windows::Win32::Foundation::HWND;
@@ -40,16 +40,15 @@ pub fn get_process_id_by_hwnd(hwnd: isize) -> Option<u32> {
     let mut pid = Pid::from_u32(pid_nr);
     let process = system.process(pid)?;
     if process.name() == "ApplicationFrameHost.exe" {
-
         let lookup = RealProcessLookup {
             afh_pid: pid_nr,
             hwnd,
-            real_pid: None
+            real_pid: None,
         };
 
         let mut real_pid = get_real_process(&lookup);
 
-        if !real_pid.is_some() {
+        if real_pid.is_none() {
             let sleep_time = time::Duration::from_millis(500);
             thread::sleep(sleep_time);
             real_pid = get_real_process(&lookup)
@@ -65,18 +64,22 @@ pub fn get_process_id_by_hwnd(hwnd: isize) -> Option<u32> {
 struct RealProcessLookup {
     afh_pid: u32,
     hwnd: HWND,
-    real_pid: Option<u32>
+    real_pid: Option<u32>,
 }
 
 fn get_real_process(lookup: &RealProcessLookup) -> Option<u32> {
     let mut lookup = lookup.clone();
     unsafe {
-        let _ = EnumChildWindows(lookup.hwnd, Some(enum_child_windows_callback), as_lparam!(lookup, RealProcessLookup));
+        let _ = EnumChildWindows(
+            lookup.hwnd,
+            Some(enum_child_windows_callback),
+            as_lparam!(lookup, RealProcessLookup),
+        );
     }
     lookup.real_pid
 }
 
-extern "system" fn  enum_child_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
+extern "system" fn enum_child_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
     unsafe {
         let real_lookup = &mut *(lparam.0 as *mut RealProcessLookup);
         let mut temp_pid: u32 = 0;
@@ -85,11 +88,9 @@ extern "system" fn  enum_child_windows_callback(hwnd: HWND, lparam: LPARAM) -> B
         if real_lookup.afh_pid != temp_pid {
             real_lookup.real_pid = Some(temp_pid);
 
-            return  BOOL::from(false)
+            return BOOL::from(false);
         }
 
         BOOL::from(true)
     }
 }
-
-
